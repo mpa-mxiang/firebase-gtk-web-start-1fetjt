@@ -178,9 +178,9 @@ firebase.firestore()
 .collection('attendees')
 .where("attending", "==", true)
 .onSnapshot(snap => {
- const newAttendeeCount = snap.docs.length;
+const newAttendeeCount = snap.docs.length;
 
- numberAttending.innerHTML = newAttendeeCount+' people going'; 
+numberAttending.innerHTML = newAttendeeCount+' people going'; 
 })
 // Listen for attendee list
 function subscribeCurrentRSVP(user){
