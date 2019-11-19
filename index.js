@@ -182,7 +182,6 @@ const newAttendeeCount = snap.docs.length;
 
 numberAttending.innerHTML = newAttendeeCount+' people going'; 
 })
-// Listen for attendee list
 function subscribeCurrentRSVP(user){
  rsvpListener = firebase.firestore()
  .collection('attendees')
