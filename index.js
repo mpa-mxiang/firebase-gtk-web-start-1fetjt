@@ -69,12 +69,89 @@ startRsvpButton.addEventListener("click",
     }
 });
 // Listen to the current Auth state
-firebase.auth().onAuthStateChanged((user)=> {
-  if (user) {
-    startRsvpButton.textContent = "LOGOUT"
-  }
-  else {
-    startRsvpButton.textContent = "RSVP"
-  }
+firebase.auth().onAuthStateChanged((user) => {
+ if (user){
+   startRsvpButton.textContent = "LOGOUT";
+   // Show guestbook to logged-in users
+   guestbookContainer.style.display = "block";
+ }
+ else{
+   startRsvpButton.textContent = "RSVP";
+   // Hide guestbook for non-logged-in users
+   guestbookContainer.style.display = "none";
+ }
+});
+// Listen to the form submission
+form.addEventListener("submit", (e) => {
+ // Prevent the default form redirect
+ e.preventDefault();
+ // Write a new message to the database collection "guestbook"
+ firebase.firestore().collection("guestbook").add({
+   text: input.value,
+   timestamp: Date.now(),
+   name: firebase.auth().currentUser.displayName,
+   userId: firebase.auth().currentUser.uid
+ })
+ // clear message input field
+ input.value = ""; 
+ // Return false to avoid redirect
+ return false;
+});
+// Create query for messages
+firebase.firestore().collection("guestbook")
+.orderBy("timestamp","desc")
+.onSnapshot((snaps) => {
+ // Reset page
+ guestbook.innerHTML = "";
+ // Loop through documents in database
+ snaps.forEach((doc) => {
+   // Create an HTML entry for each document and add it to the chat
+   const entry = document.createElement("p");
+   entry.textContent = doc.data().name + ": " + doc.data().text;
+   guestbook.appendChild(entry);
+ });
+});
+// Listen to guestbook updates
+function subscribeGuestbook(){
+   // Create query for messages
+ guestbookListener = firebase.firestore().collection("guestbook")
+ .orderBy("timestamp","desc")
+ .onSnapshot((snaps) => {
+   // Reset page
+   guestbook.innerHTML = "";
+   // Loop through documents in database
+   snaps.forEach((doc) => {
+     // Create an HTML entry for each document and add it to the chat
+     const entry = document.createElement("p");
+     entry.textContent = doc.data().name + ": " + doc.data().text;
+     guestbook.appendChild(entry);
+   });
+ });
+};
+// Unsubscribe from guestbook updates
+function unsubscribeGuestbook(){
+ if (guestbookListener != null)
+ {
+   guestbookListener();
+   guestbookListener = null;
+ }
+};
+firebase.auth().onAuthStateChanged((user) => {
+if (user){
+  startRsvpButton.textContent = "LOGOUT";
+  // Show guestbook to logged-in users
+  guestbookContainer.style.display = "block";
+
+  // Subscribe to the guestbook collection
+  subscribeGuestbook();
+}
+else{
+  startRsvpButton.textContent = "RSVP";
+  // Hide guestbook for non-logged-in users
+  guestbookContainer.style.display = "none";
+
+  // Unsubscribe from the guestbook collection
+  unsubscribeGuestbook();
+}
 });
 // const ui = new firebaseui.auth.AuthUI(firebase.auth());
